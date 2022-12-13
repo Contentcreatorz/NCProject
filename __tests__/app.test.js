@@ -21,5 +21,4 @@ describe("GET /api/topics", () => {
             })
         })
     )
-
 })
