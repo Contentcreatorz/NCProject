@@ -1,8 +1,4 @@
-const db = require('./db/connection.js')
+const database = psql => require('./db/connection.js').query(psql)
 
-exports.selectTopics = () => {
-    return db.query(`SELECT * FROM topics`)
-        .then(({ rows: topics }) => {
-            return topics
-        })
-}
+exports.selectTopics = () => database(`SELECT * FROM topics;`)
+    .then(({ rows: topics }) => topics)
