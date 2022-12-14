@@ -22,7 +22,7 @@ describe("GET /api/topics", () => {
     )
 })
 
-describe.only("GET /api/articles", () => {
+describe("GET /api/articles", () => {
     it("responds with an object containing an array of article objects that have `title`, `article_id`, `topic`, `created_at`, `votes` and `comment_count` as properties", () => request(app).get("/api/articles")
         .expect(200)
         .then(({ body: { articles } }) => {

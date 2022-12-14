@@ -1,12 +1,16 @@
 const app = require("express")()
 const { getTopics, getArticles } = require('./controllers.js')
+const { GET, USE } = {
+    GET: (path, Function) => app.get(path, Function),
 
-app.get('/api/topics', getTopics)
+    USE: (Function) => app.use(Function)
+}
 
-app.get('/api/articles', getArticles)
+GET('/api/topics', getTopics)
+GET('/api/articles', getArticles)
 
-app.use((error, request, response, next) => {
-    response.status(500).send('There was an internal server error.')
+USE((error, request, response, next) => {
+    response.status(500).send('There appears to be an internal server error.')
 })
 
 
