@@ -52,3 +52,36 @@ describe("GET /api/articles", () => {
             })
     )
 })
+
+describe("GET /api/articles/:article_id", () => {
+    it("responds with an object containing an array of article objects that have `title`, `article_id`, `topic`, `author`, `created_at`, `votes` and `body` as properties"
+        , () => request(app).get("/api/articles/2").expect(200)
+            .then(({ body: { articles } }) => {
+                articles.forEach(article => {
+                    expect(article).toEqual(expect.objectContaining({
+                        article_id: 2,
+                        title: "Sony Vaio; or, The Laptop",
+                        topic: "mitch",
+                        author: "icellusedkars",
+                        body: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: 0,
+                    }))
+                })
+            })
+    )
+
+    it("responds with an error code 404, when passed a valid but in available id"
+        , () => request(app).get("/api/articles/49115776").expect(404)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Article Not Found');
+            })
+    )
+
+    it("responds with an error code 400, when passed a malformed id"
+        , () => request(app).get("/api/articles/BANANA").expect(400)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Bad Request');
+            })
+    )
+})
