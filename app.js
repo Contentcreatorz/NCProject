@@ -1,15 +1,19 @@
 const app = require("express")()
 const { getTopics, getArticles } = require('./controllers.js')
-const { GET, USE } = {
-    GET: (path, Function) => app.get(path, Function),
 
-    USE: (Function) => app.use(Function)
-}
+app.get('/api/topics', getTopics)
+app.get('/api/articles', getArticles)
 
-GET('/api/topics', getTopics)
-GET('/api/articles', getArticles)
-
-USE((error, request, response, next) => {
+app.use((error, request, response, next) => {
+    console.table([error].reduce((relevantError, error) => {
+        for (const key in error) {
+            if (Object.hasOwnProperty.call(error, key)) {
+                const element = error[key];
+                if (element) relevantError[key] = element;
+            }
+        }
+        return relevantError
+    }, {}))
     response.status(500).send('There appears to be an internal server error.')
 })
 
