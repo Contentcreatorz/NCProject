@@ -1,17 +1,10 @@
 const app = require("express")()
-const { getTopics, getArticles, getArticleById } = require('./controllers.js')
+const { getTopics, getArticles, getArticleById, getCommentsByArticle } = require('./controllers.js')
 
 app.get('/api/topics', getTopics)
 app.get('/api/articles', getArticles)
 app.get('/api/articles/:article_id', getArticleById)
-
-app.use((error, request, response, next) => {
-    const { status, message } = error
-
-    if (status && message) return response.status(status).send(message)
-
-    next(error)
-})
+app.get('/api/articles/:article_id/comments', getCommentsByArticle)
 
 app.use((error, request, response, next) => {
     console.table([error].reduce((relevantError, error) => {
@@ -23,6 +16,12 @@ app.use((error, request, response, next) => {
         }
         return relevantError
     }, {}))
+
+    const { reason, code } = error
+
+    if (code === '22P02') return response.status(400).send('Bad Request')
+    if (reason === 'NoArticle') return response.status(404).send('Article Not Found')
+
     response.status(500).send('There appears to be an internal server error.')
 })
 
