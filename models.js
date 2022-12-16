@@ -17,7 +17,7 @@ exports.selectArticleById = (articleId) => database(`
 SELECT * FROM articles WHERE article_id = $1;`, [articleId])
     .then(({ rows: articles }) => articles.length
         ? articles
-        : Promise.reject({ reason: 'NoArticle' }))
+        : Promise.reject({ status: 404, message: 'Article Not Found' }))
 
 exports.selectCommentsByArticle = (articleId) => database(`
 SELECT comment_id, votes, created_at, author, body FROM comments 
@@ -25,4 +25,4 @@ WHERE article_id = $1
 ORDER BY created_at DESC;`, [articleId])
     .then(({ rows: comments }) => comments.length
         ? comments
-        : Promise.reject({ reason: 'NoArticle' }))
+        : Promise.reject({ status: 404, message: 'Article Not Found' }))

@@ -17,10 +17,10 @@ app.use((error, request, response, next) => {
         return relevantError
     }, {}))
 
-    const { reason, code } = error
+    const { status, message, code } = error
 
     if (code === '22P02') return response.status(400).send('Bad Request')
-    if (reason === 'NoArticle') return response.status(404).send('Article Not Found')
+    if (status && message) return response.status(status).send(message)
 
     response.status(500).send('There appears to be an internal server error.')
 })
