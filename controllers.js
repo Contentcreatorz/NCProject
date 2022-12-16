@@ -1,7 +1,8 @@
 const {
     selectTopics,
     selectArticles,
-    selectArticleById
+    selectArticleById,
+    selectCommentsByArticle
 } = require('./models.js')
 
 exports.getTopics = (request, response, next) => selectTopics()
@@ -17,11 +18,17 @@ exports.getArticles = (request, response, next) => selectArticles()
     .catch(next)
 
 exports.getArticleById = ({ params: { article_id } }, response, next) => {
-    if (/\D/.test(article_id)) next({ status: 400, message: 'Bad Request' })
-
     selectArticleById(article_id)
         .then(articles => {
             response.status(200).send({ articles })
+        })
+        .catch(next)
+}
+
+exports.getCommentsByArticle = ({ params: { article_id } }, response, next) => {
+    selectCommentsByArticle(article_id)
+        .then(comments => {
+            response.status(200).send({ comments })
         })
         .catch(next)
 }
