@@ -1,4 +1,8 @@
-const { selectTopics, selectArticles } = require('./models.js')
+const {
+    selectTopics,
+    selectArticles,
+    selectArticleById
+} = require('./models.js')
 
 exports.getTopics = (request, response, next) => selectTopics()
     .then(topics => {
@@ -11,3 +15,13 @@ exports.getArticles = (request, response, next) => selectArticles()
         response.status(200).send({ articles })
     })
     .catch(next)
+
+exports.getArticleById = ({ params: { article_id } }, response, next) => {
+    if (/\D/.test(article_id)) next({ status: 400, message: 'Bad Request' })
+
+    selectArticleById(article_id)
+        .then(articles => {
+            response.status(200).send({ articles })
+        })
+        .catch(next)
+}
