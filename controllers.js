@@ -1,7 +1,7 @@
 const {
     selectTopics,
     selectArticles,
-    selectArticlesById
+    selectArticleById
 } = require('./models.js')
 
 exports.getTopics = (request, response, next) => selectTopics()
@@ -16,10 +16,10 @@ exports.getArticles = (request, response, next) => selectArticles()
     })
     .catch(next)
 
-exports.getArticlesById = ({ params: { article_id } }, response, next) => {
+exports.getArticleById = ({ params: { article_id } }, response, next) => {
     if (/\D/.test(article_id)) next({ status: 400, message: 'Bad Request' })
 
-    selectArticlesById(article_id)
+    selectArticleById(article_id)
         .then(articles => {
             response.status(200).send({ articles })
         })

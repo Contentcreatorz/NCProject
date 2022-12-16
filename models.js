@@ -13,7 +13,7 @@ GROUP BY articles.article_id
 ORDER BY articles.created_at DESC;`)
     .then(({ rows: articles }) => articles)
 
-exports.selectArticlesById = (articleId) => database(`
+exports.selectArticleById = (articleId) => database(`
 SELECT * FROM articles WHERE article_id = $1;`, [articleId])
     .then(({ rows: articles }) => articles.length
         ? articles
