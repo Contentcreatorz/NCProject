@@ -68,7 +68,7 @@ describe("GET /api/articles/:article_id", () => {
             })
     )
 
-    it("responds with an error code 404, when passed a valid but in available id"
+    it("responds with an error code 404, when passed a valid but unavailable id"
         , () => request(app).get("/api/articles/49115776").expect(404)
             .then(({ error: { text } }) => {
                 expect(text).toBe('Article Not Found')
@@ -109,7 +109,7 @@ describe("GET /api/articles/:article_id/comments", () => {
             })
     )
 
-    it("responds with an error code 404, when passed a valid but in available id"
+    it("responds with an error code 404, when passed a valid but unavailable id"
         , () => request(app).get("/api/articles/49115776/comments").expect(404)
             .then(({ error: { text } }) => {
                 expect(text).toBe('Article Not Found')
@@ -118,6 +118,70 @@ describe("GET /api/articles/:article_id/comments", () => {
 
     it("responds with an error code 400, when passed a malformed id"
         , () => request(app).get("/api/articles/BANANA/comments").expect(400)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Bad Request')
+            })
+    )
+})
+
+describe("POST /api/articles/:article_id/comments", () => {
+    it("Request body accepts an object with the `username` and `body` properties, then responds with the posted comment."
+        , () => request(app).post("/api/articles/1/comments")
+            .send({
+                username: "butter_bridge",
+                body: "All bow to the Sultan of Sentiment!"
+            })
+            .expect(201)
+            .then(({ body: { comments } }) => {
+                expect(comments).toEqual(expect.objectContaining({
+                    author: 'butter_bridge',
+                    body: "All bow to the Sultan of Sentiment!"
+                }))
+            })
+    )
+
+    it("responds with an error code 404, when passed a valid but unavailable id"
+        , () => request(app).post("/api/articles/14919847/comments")
+            .send({
+                username: "butter_bridge",
+                body: "All bow to the Sultan of Sentiment!"
+            })
+            .expect(400)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Bad Request')
+            })
+    )
+
+    it("responds with an error code 400, when passed a malformed id"
+        , () => request(app).post("/api/articles/BANANA/comments").expect(400)
+            .send({
+                username: "butter_bridge",
+                body: "All bow to the Sultan of Sentiment!"
+            })
+            .expect(400)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Bad Request')
+            })
+    )
+
+    it("responds with an error code 400, when passed a malformed body"
+        , () => request(app).post("/api/articles/1/comments").expect(400)
+            .send({
+
+            })
+            .expect(400)
+            .then(({ error: { text } }) => {
+                expect(text).toBe('Bad Request')
+            })
+    )
+
+    it("responds with an error code 400, when passed a malformed body"
+        , () => request(app).post("/api/articles/1/comments").expect(400)
+            .send({
+                username: 1,
+                body: true
+            })
+            .expect(400)
             .then(({ error: { text } }) => {
                 expect(text).toBe('Bad Request')
             })
