@@ -20,7 +20,9 @@ SELECT * FROM articles WHERE article_id = $1;`, [articleId])
         : Promise.reject({ reason: 'NoArticle' }))
 
 exports.selectCommentsByArticle = (articleId) => database(`
-SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC;`, [articleId])
+SELECT comment_id, votes, created_at, author, body FROM comments 
+WHERE article_id = $1 
+ORDER BY created_at DESC;`, [articleId])
     .then(({ rows: comments }) => comments.length
         ? comments
         : Promise.reject({ reason: 'NoArticle' }))
