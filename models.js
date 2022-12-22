@@ -58,4 +58,4 @@ WHERE article_id = %L
 RETURNING *;`,
     [inc_votes],
     [article_id]
-  ).then(({ rows: [article] }) => article?article:Promise.reject(rows))
+  ).then(({ rows: [article] }) => (article ? article : Promise.reject(rows)))

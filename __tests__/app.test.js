@@ -230,6 +230,25 @@ describe('PATCH /api/articles/:article_id', () => {
         )
       }))
 
+  it('should reduce the votes property of the article by the specified amount and return the updated article with a 200 OK status code.', () =>
+    request(app)
+      .patch('/api/articles/1')
+      .send({ inc_votes: -10 })
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: expect.any(String),
+            votes: 90,
+          })
+        )
+      }))
+
   it('should return a 404 Not Found error if the article with the specified ID was not found', () =>
     request(app)
       .patch('/api/articles/14919847')
