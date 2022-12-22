@@ -26,6 +26,8 @@ ORDER BY created_at DESC;`, [articleId]).then(({ rows: comments }) => comments.l
     ? comments
     : Promise.reject({ status: 404, message: 'Article Not Found' }))
 
-exports.insertCommentToArticle = ({ article_id, body: { username, body } }) => database(`    INSERT INTO comments (body, author, article_id) VALUES (%L) RETURNING *;`,
+exports.insertCommentToArticle = ({ article_id, body: { username, body } }) => database(`    
+INSERT INTO comments (body, author, article_id) VALUES (%L) RETURNING *;`,
     [body, username, article_id])
     .then(({ rows: [comment] }) => comment)
+    
