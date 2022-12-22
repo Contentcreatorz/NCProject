@@ -4,6 +4,7 @@ const {
   selectArticleById,
   selectCommentsByArticle,
   updateArticleVote,
+  selectUsers,
   insertCommentToArticle,
 } = require('./models.js')
 
@@ -23,8 +24,8 @@ exports.getArticles = (request, response, next) =>
 
 exports.getArticleById = ({ params: { article_id } }, response, next) => {
   selectArticleById(article_id)
-    .then(articles => {
-      response.status(200).send({ articles })
+    .then(article => {
+      response.status(200).send({ article })
     })
     .catch(next)
 }
@@ -60,3 +61,10 @@ exports.updateArticleVotes = (
     })
     .catch(next)
 }
+
+exports.getUsers = (request, response, next) =>
+  selectUsers()
+    .then(users => {
+      response.status(200).send({ users })
+    })
+    .catch(next)

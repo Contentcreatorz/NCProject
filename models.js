@@ -18,16 +18,23 @@ GROUP BY articles.article_id
 ORDER BY articles.created_at DESC;`
   ).then(({ rows: articles }) => articles)
 
-exports.selectArticleById = articleId =>
+exports.selectArticleById = article_id =>
   database(
     `
-SELECT * FROM articles WHERE article_id = %L;`,
-    [articleId]
-  ).then(({ rows: articles }) =>
-    articles.length
-      ? articles
-      : Promise.reject({ status: 404, message: 'Article Not Found' })
-  )
+SELECT articles.*, CAST (COUNT(comments.comment_id) AS INT) AS comment_count
+FROM articles
+LEFT JOIN comments
+ON articles.article_id = comments.article_id
+WHERE articles.article_id = %L
+GROUP BY articles.article_id;`,
+    [article_id]
+  ).then(({ rows: articles }) => {
+    if (articles.length) {
+      return articles[0]
+    } else {
+      return Promise.reject({ status: 404, message: 'Article Not Found' })
+    }
+  })
 
 exports.selectCommentsByArticle = articleId =>
   database(
@@ -59,3 +66,6 @@ RETURNING *;`,
     [inc_votes],
     [article_id]
   ).then(({ rows: [article] }) => (article ? article : Promise.reject(rows)))
+
+exports.selectUsers = () =>
+  database(`SELECT * FROM users;`).then(({ rows: users }) => users)

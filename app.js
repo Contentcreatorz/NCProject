@@ -6,6 +6,7 @@ const {
   getCommentsByArticle,
   updateArticleVotes,
   postCommentToArticle,
+  getUsers,
 } = require('./controllers.js')
 const { errorHandler } = require('./errors/index.js')
 
@@ -13,6 +14,7 @@ app.get('/api/topics', getTopics)
 app.get('/api/articles', getArticles)
 app.get('/api/articles/:article_id', getArticleById)
 app.get('/api/articles/:article_id/comments', getCommentsByArticle)
+app.get('/api/users', getUsers)
 
 app.use(require('express').json())
 
