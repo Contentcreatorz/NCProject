@@ -1,3 +1,5 @@
+const { values } = require('./db/data/test-data/articles.js')
+
 const database = (psql, ...replacements) =>
   require('./db/connection.js').query(
     require('pg-format')(psql, ...replacements)
@@ -6,26 +8,23 @@ const database = (psql, ...replacements) =>
 exports.selectTopics = () =>
   database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = (topic, sort_by, order) => {
-  let query = `
+exports.selectArticles = (topic, sort_by, order) =>
+  database(
+    [topic].reduce(
+      query =>
+        (topic ? query + ` WHERE articles.topic = %L` : query) +
+        `
+    GROUP BY articles.article_id
+    ORDER BY articles.${sort_by || 'created_at'} ${order || 'DESC'}`,
+      `
   SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
   CAST (COUNT(comment_id) AS INT) AS comment_count
   FROM articles
   LEFT JOIN comments
   ON articles.article_id = comments.article_id`
-  let values = []
-
-  if (topic) {
-    query += ` WHERE articles.topic = %L`
-    values.push(topic)
-  }
-
-  query += `
-  GROUP BY articles.article_id
-  ORDER BY articles.${sort_by || 'created_at'} ${order || 'DESC'}`
-
-  return database(query, values).then(({ rows: articles }) => articles)
-}
+    ),
+    topic || []
+  ).then(({ rows: articles }) => articles)
 
 exports.selectArticleById = article_id =>
   database(
@@ -37,13 +36,11 @@ ON articles.article_id = comments.article_id
 WHERE articles.article_id = %L
 GROUP BY articles.article_id;`,
     [article_id]
-  ).then(({ rows: articles }) => {
-    if (articles.length) {
-      return articles[0]
-    } else {
-      return Promise.reject({ status: 404, message: 'Article Not Found' })
-    }
-  })
+  ).then(({ rows: [article] }) =>
+    article
+      ? article
+      : Promise.reject({ status: 404, message: 'Article Not Found' })
+  )
 
 exports.selectCommentsByArticle = articleId =>
   database(
