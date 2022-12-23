@@ -15,13 +15,14 @@ exports.getTopics = (request, response, next) =>
     })
     .catch(next)
 
-exports.getArticles = (request, response, next) =>
-  selectArticles()
+exports.getArticles = (request, response, next) => {
+  const { topic, sort_by, order } = request.query
+  selectArticles(topic, sort_by, order)
     .then(articles => {
       response.status(200).send({ articles })
     })
     .catch(next)
-
+}
 exports.getArticleById = ({ params: { article_id } }, response, next) => {
   selectArticleById(article_id)
     .then(article => {

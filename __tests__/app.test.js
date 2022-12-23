@@ -56,6 +56,25 @@ describe('GET /api/articles', () => {
           descending: true,
         })
       }))
+
+  it('responds with an array of article objects filtered by topic, sorted by sort_by column, and ordered by order', () =>
+    request(app)
+      .get('/api/articles')
+      .query({ topic: 'mitch', sort_by: 'votes', order: 'asc' })
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(11)
+        expect(articles).toBeSortedBy('votes', {
+          descending: false,
+        })
+        expect(articles).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              topic: 'mitch',
+            }),
+          ])
+        )
+      }))
 })
 
 describe('GET /api/articles/:article_id', () => {

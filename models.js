@@ -6,17 +6,26 @@ const database = (psql, ...replacements) =>
 exports.selectTopics = () =>
   database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = () =>
-  database(
-    `
-SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
-CAST (COUNT(comment_id) AS INT) AS comment_count
-FROM articles
-LEFT JOIN comments
-ON articles.article_id = comments.article_id
-GROUP BY articles.article_id
-ORDER BY articles.created_at DESC;`
-  ).then(({ rows: articles }) => articles)
+exports.selectArticles = (topic, sort_by, order) => {
+  let query = `
+  SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
+  CAST (COUNT(comment_id) AS INT) AS comment_count
+  FROM articles
+  LEFT JOIN comments
+  ON articles.article_id = comments.article_id`
+  let values = []
+
+  if (topic) {
+    query += ` WHERE articles.topic = %L`
+    values.push(topic)
+  }
+
+  query += `
+  GROUP BY articles.article_id
+  ORDER BY articles.${sort_by || 'created_at'} ${order || 'DESC'}`
+
+  return database(query, values).then(({ rows: articles }) => articles)
+}
 
 exports.selectArticleById = article_id =>
   database(
