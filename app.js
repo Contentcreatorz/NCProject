@@ -1,14 +1,15 @@
 const app = require('express')()
 const {
-  getTopics,
-  getArticles,
-  getArticleById,
-  getCommentsByArticle,
-  updateArticleVotes,
-  postCommentToArticle,
-  getUsers,
+    getTopics,
+    getArticles,
+    getArticleById,
+    getCommentsByArticle,
+    updateArticleVotes,
+    postCommentToArticle,
+    getUsers,
+    deleteCommentById,
 } = require('./controllers.js')
-const { errorHandler } = require('./errors/index.js')
+const { customError, serverError, psqlError } = require('./errors/index.js')
 
 app.get('/api/topics', getTopics)
 app.get('/api/articles', getArticles)
@@ -22,6 +23,10 @@ app.post('/api/articles/:article_id/comments', postCommentToArticle)
 
 app.patch('/api/articles/:article_id', updateArticleVotes)
 
-app.use((error, request, response, next) => errorHandler(error, response))
+app.delete('/api/comments/:comment_id', deleteCommentById);
+
+app.use((error, request, response, next) => customError(error, response, next))
+app.use((error, request, response, next) => psqlError(error, response, next))
+app.use((error, request, response) => serverError(error, response))
 
 module.exports = app
