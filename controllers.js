@@ -7,7 +7,10 @@ const {
     selectUsers,
     insertCommentToArticle,
     deleteComment,
+    readEndpointJSON,
 } = require('./models.js')
+
+
 
 exports.getTopics = (request, response, next) =>
     selectTopics()
@@ -82,3 +85,11 @@ exports.deleteCommentById = ({ params: { comment_id } }, response, next) => {
         })
         .catch(next);
 };
+
+exports.getEndpointJSON = (request, response, next) => {
+    readEndpointJSON()
+        .then(data => {
+            response.status(200).send(JSON.parse(data))
+        })
+        .catch(next)
+}

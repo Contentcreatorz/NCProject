@@ -8,6 +8,7 @@ const {
     postCommentToArticle,
     getUsers,
     deleteCommentById,
+    getEndpointJSON
 } = require('./controllers.js')
 const { customError, serverError, psqlError } = require('./errors/index.js')
 
@@ -16,6 +17,8 @@ app.get('/api/articles', getArticles)
 app.get('/api/articles/:article_id', getArticleById)
 app.get('/api/articles/:article_id/comments', getCommentsByArticle)
 app.get('/api/users', getUsers)
+app.get('/api', getEndpointJSON)
+
 
 app.use(require('express').json())
 

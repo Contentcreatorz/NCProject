@@ -88,3 +88,5 @@ exports.deleteComment = (commentId) => database(`
     ? comment
     : Promise.reject({ status: 404, message: 'Comment Not Found' })
 )
+
+exports.readEndpointJSON = () => require('fs/promises').readFile('./ENDpoints.json', 'utf8')
