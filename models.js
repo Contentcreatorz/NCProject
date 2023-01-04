@@ -76,7 +76,7 @@ module.exports = {
     RETURNING *;`,
         [inc_votes],
         [article_id]
-    ).then(({ rows, rows: [article] }) => (article ? article : Promise.reject({ status: 404, message: "Article Not Found" }))),
+    ).then(({ rows: [article] }) => (article ? article : Promise.reject({ status: 404, message: "Article Not Found" }))),
 
     selectUsers: () => database(`SELECT * FROM users;`).then(({ rows: users }) => users),
 
