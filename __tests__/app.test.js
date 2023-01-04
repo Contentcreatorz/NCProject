@@ -25,7 +25,7 @@ describe('GET /api/topics', () => {
             }))
 })
 
-describe('GET /api/articles', () => {
+describe.only('GET /api/articles', () => {
     it('responds with an object containing an array of article objects that have `title`, `article_id`, `topic`, `created_at`, `votes` and `comment_count` as properties', () =>
         request(app)
             .get('/api/articles')

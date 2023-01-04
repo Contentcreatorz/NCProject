@@ -2,38 +2,33 @@ const database = (psql, ...replacements) => require('./db/connection.js').query(
 
 exports.selectTopics = () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = (author, topic, sortBy, order) => database(...['validate query', 'construct query string', 'insert replacements'].reduce((processedArguments, step) => {
-    ({
+exports.selectArticles = (author, topic, sortBy, order) => database(...['Validate Query', 'Query String', 'Replacements'].reduce((Args, step) => ({
+    'Validate Query': () => {
+        if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
+            throw { status: 400, message: 'Invalid sort query' }
+        if (order && !['asc', 'desc'].includes(order))
+            throw { status: 400, message: 'Invalid order query' }
+    },
 
-        'validate query': () => {
-            if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
-                throw { status: 400, message: 'Invalid sort query' }
-            if (order && !['asc', 'desc'].includes(order))
-                throw { status: 400, message: 'Invalid order query' }
-        },
-
-        'construct query string': () => processedArguments.push(`
-                    SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
-                    CAST (COUNT(comment_id) AS INT) AS comment_count
-                    FROM articles
-                    LEFT JOIN comments
-                    ON articles.article_id = comments.article_id
-                    ` + ((processedWhereClause = [
-                topic ? `articles.topic = %L` : '',
-                author ? `articles.author = %L` : ''
-            ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
-                'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) + `
+    'Query String': () => Args.push(`
+    SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
+    CAST (COUNT(comment_id) AS INT) AS comment_count
+    FROM articles
+    LEFT JOIN comments
+    ON articles.article_id = comments.article_id
+    ` + ((processedWhereClause = [
+            topic ? `articles.topic = %L` : '',
+            author ? `articles.author = %L` : ''
+        ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
+            'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) + `
                     GROUP BY articles.article_id
                     ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
-        'insert replacements': () => {
-            if (topic) processedArguments.push(topic)
-            if (author) processedArguments.push(author)
-        }
-    }[step]())
-
-    return processedArguments
-},
+    'Replacements': () => {
+        if (topic) Args.push(topic)
+        if (author) Args.push(author)
+    }
+}[step]()) ? Args : Args,
     [])).then(({ rows: articles }) => articles)
 
 
