@@ -9,11 +9,15 @@ exports.selectArticles = (author, topic, sortBy, order) => database(...['validat
     FROM articles
     LEFT JOIN comments
     ON articles.article_id = comments.article_id
-    ` + ((processedWhereClause = [
+    ` +
+
+        ((processedWhereClause = [
             topic ? `articles.topic = %L` : '',
             author ? `articles.author = %L` : ''
         ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
-            'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) + `
+            'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) +
+
+        `
     GROUP BY articles.article_id
     ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
@@ -28,7 +32,9 @@ exports.selectArticles = (author, topic, sortBy, order) => database(...['validat
         if (order && !['asc', 'desc'].includes(order))
             throw { status: 400, message: 'Invalid order query' }
     },
-}[step]()) ? Args : Args,
+}[step]())
+    ? Args
+    : Args,
     [])).then(({ rows: articles }) => articles)
 
 
