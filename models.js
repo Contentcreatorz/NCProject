@@ -2,7 +2,8 @@ module.exports = {
     selectTopics: () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics),
 
     selectArticles: (author, topic, sortBy, order) => database(...['validateQuery', 'buildQueryString', 'replacements'].reduce((Args, task) => ({
-        buildQueryString: () => Args.push(`
+        buildQueryString: () => Args.push(
+            `
         SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
         CAST (COUNT(comment_id) AS INT) AS comment_count
         FROM articles
@@ -36,7 +37,8 @@ module.exports = {
         : Args,
         [])).then(({ rows: articles }) => articles),
 
-    selectArticleById: article_id => database(`
+    selectArticleById: article_id => database(
+        `
     SELECT articles.*, CAST (COUNT(comments.comment_id) AS INT) AS comment_count
     FROM articles
     LEFT JOIN comments
@@ -49,7 +51,8 @@ module.exports = {
         : Promise.reject({ status: 404, message: 'Article Not Found' })
     ),
 
-    selectCommentsByArticle: articleId => database(`
+    selectCommentsByArticle: articleId => database(
+        `
     SELECT comment_id, votes, created_at, author, body FROM comments 
     WHERE article_id = %L 
     ORDER BY created_at DESC;`,
@@ -59,12 +62,14 @@ module.exports = {
         : Promise.reject({ status: 404, message: 'Article Not Found' })
     ),
 
-    insertCommentToArticle: ({ article_id, body: { username, body } }) => database(`    
+    insertCommentToArticle: ({ article_id, body: { username, body } }) => database(
+        `    
     INSERT INTO comments (body, author, article_id) VALUES (%L) RETURNING *;`,
         [body, username, article_id]
     ).then(({ rows: [comment] }) => comment),
 
-    updateArticleVote: (article_id, inc_votes) => database(`
+    updateArticleVote: (article_id, inc_votes) => database(
+        `
     UPDATE articles
     SET votes = votes + %L
     WHERE article_id = %L
@@ -75,7 +80,8 @@ module.exports = {
 
     selectUsers: () => database(`SELECT * FROM users;`).then(({ rows: users }) => users),
 
-    deleteComment: (commentId) => database(`
+    deleteComment: (commentId) => database(
+        `
     DELETE FROM comments
     WHERE comment_id = %L
     RETURNING *`,
