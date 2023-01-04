@@ -2,9 +2,17 @@ const database = (psql, ...replacements) => require('./db/connection.js').query(
 
 exports.selectTopics = () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = (author, topic, sortBy, order) => database(...['validate query', 'construct query', 'insert replacements'].reduce((processedArguments, argument) => {
+exports.selectArticles = (author, topic, sortBy, order) => database(...['validate query', 'construct query string', 'insert replacements'].reduce((processedArguments, step) => {
     ({
-        'construct query': () => processedArguments.push(`
+
+        'validate query': () => {
+            if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
+                throw { status: 400, message: 'Invalid sort query' }
+            if (order && !['asc', 'desc'].includes(order))
+                throw { status: 400, message: 'Invalid order query' }
+        },
+
+        'construct query string': () => processedArguments.push(`
                     SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
                     CAST (COUNT(comment_id) AS INT) AS comment_count
                     FROM articles
@@ -18,18 +26,11 @@ exports.selectArticles = (author, topic, sortBy, order) => database(...['validat
                     GROUP BY articles.article_id
                     ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
-        'validate query': () => {
-            if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
-                throw { status: 400, message: 'Invalid sort query' }
-            if (order && !['asc', 'desc'].includes(order))
-                throw { status: 400, message: 'Invalid order query' }
-        },
-
         'insert replacements': () => {
             if (topic) processedArguments.push(topic)
             if (author) processedArguments.push(author)
         }
-    }[argument]())
+    }[step]())
 
     return processedArguments
 },
