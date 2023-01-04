@@ -26,10 +26,10 @@ app.post('/api/articles/:article_id/comments', postCommentToArticle)
 
 app.patch('/api/articles/:article_id', updateArticleVotes)
 
-app.delete('/api/comments/:comment_id', deleteCommentById);
+app.delete('/api/comments/:comment_id', deleteCommentById)
 
-app.use((error, request, response, next) => customError(error, response, next))
-app.use((error, request, response, next) => psqlError(error, response, next))
-app.use((error, request, response) => serverError(error, response))
+app.use((error, request, response, next) => customError(error, response, next(error)))
+app.use((error, request, response, next) => psqlError(error, response, next(error)))
+app.use((error, request, response) => serverError(response))
 
 module.exports = app
