@@ -2,7 +2,7 @@ const database = (psql, ...replacements) => require('./db/connection.js').query(
 
 exports.selectTopics = () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = (author, topic, sortBy, order) => database(...[true, 'psql Query', [topic, author]].reduce((processedArguments, argument) => {
+exports.selectArticles = (author, topic, sortBy, order) => database(...[true, '', [topic, author]].reduce((processedArguments, argument) => {
     ({
         'string': () => processedArguments.push(`
                     SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
