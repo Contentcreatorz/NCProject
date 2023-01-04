@@ -73,7 +73,7 @@ WHERE article_id = %L
 RETURNING *;`,
     [inc_votes],
     [article_id]
-).then(({ rows: [article] }) => (article ? article : Promise.reject(rows)))
+).then(({ rows, rows: [article] }) => (article ? article : Promise.reject({ status:404, message:"Article Not Found" })))
 
 exports.selectUsers = () => database(`SELECT * FROM users;`).then(({ rows: users }) => users)
 

@@ -1,7 +1,7 @@
 exports.customError = (error, response, next) => {
   const { status, message } = error
 
-  if (status && message) response.status(status).send(message)
+  if (status && message) return response.status(status).send(message)
 
   next(error)
 }
@@ -21,11 +21,10 @@ exports.psqlError = (error, response) => {
 
   if (['ri_ReportViolation', 'pg_strtoint32', 'ExecConstraints'].some(psqlRoutine => psqlRoutine === routine)) response.status(400).send('Bad Request')
 
-  code &
-    {
-      23503: response.status(404).send('Article Not Found'),
-      23502: response.status(400).send('Bad Request'),
-    }[code]
+  if (code) ({
+    23503: response.status(404).send('Article Not Found'),
+    23502: response.status(400).send('Bad Request'),
+  }[code])
 }
 
 exports.serverError = response => response.status(500).send('There appears to be an internal server error.')
