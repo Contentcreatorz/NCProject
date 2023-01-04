@@ -21,8 +21,8 @@ exports.selectArticles = (author, topic, sortBy, order) => database(...['validat
             author ? `articles.author = %L` : ''
         ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
             'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) + `
-                    GROUP BY articles.article_id
-                    ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
+    GROUP BY articles.article_id
+    ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
     replacements: () => {
         if (topic) Args.push(topic)
