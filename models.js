@@ -2,43 +2,39 @@ const database = (psql, ...replacements) => require('./db/connection.js').query(
 
 exports.selectTopics = () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics)
 
-exports.selectArticles = (author, topic, sortBy, order) => {
-    const allowedSortBy = ['title', 'topic', 'author', 'created_at', 'votes']
-    const allowedOrder = ['asc', 'desc']
+exports.selectArticles = (author, topic, sortBy, order) => database(...[true, 'psql Query', [topic, author]].reduce((processedArguments, argument) => {
+    ({
+        'string': () => processedArguments.push(`
+                    SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
+                    CAST (COUNT(comment_id) AS INT) AS comment_count
+                    FROM articles
+                    LEFT JOIN comments
+                    ON articles.article_id = comments.article_id
+                    ` + ((processedWhereClause = [
+                topic ? `articles.topic = %L` : '',
+                author ? `articles.author = %L` : ''
+            ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
+                'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) + `
+                    GROUP BY articles.article_id
+                    ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
-    if (sortBy && !allowedSortBy.includes(sortBy)) throw { status: 400, message: 'Invalid sort query' }
+        'boolean': () => {
+            if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
+                throw { status: 400, message: 'Invalid sort query' }
+            if (order && !['asc', 'desc'].includes(order))
+                throw { status: 400, message: 'Invalid order query' }
+        },
 
-    if (order && !allowedOrder.includes(order)) throw { status: 400, message: 'Invalid order query' }
+        'object': () => {
+            if (topic) processedArguments.push(topic)
+            if (author) processedArguments.push(author)
+        }
+    }[typeof argument]())
 
-    const whereClause = (processedWhereClause = [
-        topic ? `articles.topic = %L` : '',
-        author ? `articles.author = %L` : ''
-    ].reduce((whereClause, filter) =>
-        `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
-        'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `
+    return processedArguments
+},
+    [])).then(({ rows: articles }) => articles)
 
-
-    const sortClause = `
-        GROUP BY articles.article_id
-        ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`
-
-    const query = [''].reduce(
-        baseQuery => baseQuery + whereClause + sortClause,
-        `
-            SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
-            CAST (COUNT(comment_id) AS INT) AS comment_count
-            FROM articles
-            LEFT JOIN comments
-            ON articles.article_id = comments.article_id`
-    )
-
-    const replacements = []
-
-    if (topic) replacements.push(topic)
-
-    if (author) replacements.push(author)
-    return database(query, ...replacements).then(({ rows: articles }) => articles)
-}
 
 exports.selectArticleById = article_id => database(`
 SELECT articles.*, CAST (COUNT(comments.comment_id) AS INT) AS comment_count
