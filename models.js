@@ -10,21 +10,19 @@ module.exports = {
         LEFT JOIN comments
         ON articles.article_id = comments.article_id
         ` +
-
             ((processedWhereClause = [
-                topic ? `articles.topic ILIKE %L` : '',
                 title ? `articles.title ILIKE %L` : '',
+                topic ? `articles.topic ILIKE %L` : '',
                 author ? `articles.author ILIKE %L` : ''
             ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 7 ? 'AND' : ''} ${filter}` : ''}`,
                 'WHERE').trim()) === 'WHERE' ? '' : processedWhereClause) +
-
             `
         GROUP BY articles.article_id
         ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
         replacements: () => {
-            if (topic) Args.push(`%${topic}%`)
             if (title) Args.push(`%${title}%`)
+            if (topic) Args.push(`%${topic}%`)
             if (author) Args.push(`%${author}%`)
         },
 
