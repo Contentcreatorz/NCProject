@@ -3,7 +3,7 @@ module.exports = {
         .then(topics => response.status(200).send({ topics }))
         .catch(next),
 
-    getArticles: ({ query: { author, topic, sort_by, order } }, response, next) => selectArticles(author, topic, sort_by, order)
+    getArticles: ({ query: { author, title, topic, sort_by, order } }, response, next) => selectArticles(author, title, topic, sort_by, order)
         .then(articles => response.status(200).send({ articles }))
         .catch(next),
 

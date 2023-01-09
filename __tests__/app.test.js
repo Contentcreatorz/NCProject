@@ -175,6 +175,67 @@ describe('GET /api/articles', () => {
         .expect(400)
         .then(({ error: { text } }) => expect(text).toBe('Invalid order query')));
 
+    it('responds with an array of article objects filtered by title', () => request(app)
+        .get('/api/articles')
+        .query({ title: 'Moustache' })
+        .expect(200)
+        .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(1)
+            expect(articles).toEqual([expect.objectContaining({ title: "Moustache" })]
+            )
+        })
+    )
+
+    it('responds with an array of article objects filtered by a partial match of the title', () => request(app)
+        .get('/api/articles')
+        .query({ title: 'Mou' })
+        .expect(200)
+        .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(1)
+            expect(articles).toEqual([expect.objectContaining({ title: "Moustache" })]
+            )
+        })
+    )
+
+    it('responds with an array of article objects filtered by partial matches on the title, author, and topic', () => request(app)
+        .get('/api/articles')
+        .query({ title: 'Mou', author: 'butter', topic: 'mitch' })
+        .expect(200)
+        .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(1)
+            expect(articles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        title: 'Moustache',
+                        author: 'butter_bridge',
+                        topic: 'mitch',
+                    }),
+                ])
+            )
+        })
+    )
+
+    it('responds with an array of article objects filtered by partial matches on the title, author, and topic, and sorted by the votes column', () => request(app)
+        .get('/api/articles')
+        .query({ title: 'Mou', author: 'butter', topic: 'mitch', sort_by: 'votes', order: 'desc' })
+        .expect(200)
+        .then(({ body: { articles } }) => {
+            expect(articles).toHaveLength(1)
+            expect(articles).toBeSortedBy('votes', {
+                descending: true,
+            })
+            expect(articles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        title: 'Moustache',
+                        author: 'butter_bridge',
+                        topic: 'mitch',
+                    }),
+                ])
+            )
+        })
+    )
+
 })
 
 describe('GET /api/articles/:article_id', () => {

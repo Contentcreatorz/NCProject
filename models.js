@@ -1,7 +1,7 @@
 module.exports = {
     selectTopics: () => database(`SELECT * FROM topics;`).then(({ rows: topics }) => topics),
 
-    selectArticles: (author, topic, sortBy, order) => database(...['validateQuery', 'buildQueryString', 'replacements'].reduce((Args, task) => ({
+    selectArticles: (author, title, topic, sortBy, order) => database(...['validateQuery', 'buildQueryString', 'replacements'].reduce((Args, task) => ({
         buildQueryString: () => Args.push(
             `
         SELECT articles.author, articles.article_id, articles.title, articles.topic, articles.created_at, articles.votes, 
@@ -12,18 +12,21 @@ module.exports = {
         ` +
 
             ((processedWhereClause = [
-                topic ? `articles.topic = %L` : '',
-                author ? `articles.author = %L` : ''
-            ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 6 ? 'AND' : ''} ${filter}` : ''}`,
-                'WHERE').trim()) === 'WHERE' ? '' : ` ${processedWhereClause} `) +
+                topic ? `articles.topic ILIKE %L` : '',
+                title ? `articles.title ILIKE %L` : '',
+                author ? `articles.author ILIKE %L` : ''
+            ].reduce((whereClause, filter) => `${whereClause} ${filter ? `${whereClause.length > 7 ? 'AND' : ''} ${filter}` : ''}`,
+                'WHERE').trim()) === 'WHERE' ? '' : processedWhereClause) +
 
             `
         GROUP BY articles.article_id
         ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
         replacements: () => {
-            if (topic) Args.push(topic)
-            if (author) Args.push(author)
+            console.log('passed to format :>> ', Args);
+            if (topic) Args.push(`%${topic}%`)
+            if (title) Args.push(`%${title}%`)
+            if (author) Args.push(`%${author}%`)
         },
 
         validateQuery: () => {
@@ -93,5 +96,5 @@ module.exports = {
 
     readEndpointJSON: () => require('fs/promises').readFile('./ENDpoints.json', 'utf8'),
 
-    _formattedConnection: database = (psql, ...replacements) => require('./db/connection.js').query(require('pg-format')(psql, ...replacements)),
+    _formattedConnection: database = (psql, ...replacements) => require('./db/connection.js').query(({ a: require('pg-format')(psql, ...replacements), t: console.log('returned from format :>> ', require('pg-format')(psql, ...replacements)) }.a)),
 }
