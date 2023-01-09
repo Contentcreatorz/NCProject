@@ -23,7 +23,6 @@ module.exports = {
         ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
 
         replacements: () => {
-            console.log('passed to format :>> ', Args);
             if (topic) Args.push(`%${topic}%`)
             if (title) Args.push(`%${title}%`)
             if (author) Args.push(`%${author}%`)
@@ -96,5 +95,5 @@ module.exports = {
 
     readEndpointJSON: () => require('fs/promises').readFile('./ENDpoints.json', 'utf8'),
 
-    _formattedConnection: database = (psql, ...replacements) => require('./db/connection.js').query(({ a: require('pg-format')(psql, ...replacements), t: console.log('returned from format :>> ', require('pg-format')(psql, ...replacements)) }.a)),
+    _formattedConnection: database = (psql, ...replacements) => require('./db/connection.js').query(require('pg-format')(psql, ...replacements)),
 }
