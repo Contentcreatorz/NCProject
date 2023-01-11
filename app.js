@@ -13,10 +13,7 @@ const {
 } = require('./controllers.js')
 const { customError, serverError, psqlError } = require('./errors/index.js')
 
-app.use(cors({
-    origin: '*',
-    optionsSuccessStatus: 200,
-}))
+app.use(cors())
 
 app.get('/api/topics', getTopics)
 app.get('/api/articles', getArticles)
