@@ -13,13 +13,10 @@ const {
 } = require('./controllers.js')
 const { customError, serverError, psqlError } = require('./errors/index.js')
 
-app.use(cors())
-
-app.all('/', (request, response, next) => {
-    response.header("Access-Control-Allow-Origin", "*")
-    response.header("Access-Control-Allow-Headers", "X-Requested-With")
-    next()
-})
+app.use(cors({
+    origin: '*',
+    optionsSuccessStatus: 200,
+}))
 
 app.get('/api/topics', getTopics)
 app.get('/api/articles', getArticles)
