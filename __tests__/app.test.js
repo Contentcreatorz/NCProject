@@ -57,10 +57,21 @@ describe('GET /api/articles', () => {
                 })
             }))
 
-    it('should be sorted by date in descending order by default', () =>
+    it('should be sorted by comment_count in descending order by default', () =>
         request(app)
             .get('/api/articles')
             .query({ sort_by: 'comment_count' })
+            .expect(200)
+            .then(({ body: { articles } }) => {
+                expect(articles).toBeSortedBy('comment_count', {
+                    descending: true,
+                })
+            }))
+
+    it('should be sorted by comment_count in ascending order', () =>
+        request(app)
+            .get('/api/articles')
+            .query({ sort_by: 'comment_count', order: 'asc' })
             .expect(200)
             .then(({ body: { articles } }) => {
                 expect(articles).toBeSortedBy('comment_count', {
