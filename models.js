@@ -18,7 +18,7 @@ module.exports = {
                 'WHERE').trim()) === 'WHERE' ? '' : processedWhereClause) +
             `
         GROUP BY articles.article_id
-        ORDER BY articles.${sortBy || 'created_at'} ${order || 'DESC'}`),
+        ORDER BY ${sortBy==='comment_count'?sortBy:`articles.${sortBy || 'created_at'} ${order || 'DESC'}`}`),
 
         replacements: () => {
             if (title) Args.push(`%${title}%`)
@@ -27,7 +27,8 @@ module.exports = {
         },
 
         validateQuery: () => {
-            if (sortBy && !['title', 'topic', 'author', 'created_at', 'votes'].includes(sortBy))
+            console.log('sortby :>> ', sortBy);
+            if (sortBy && !['title', 'topic', 'author', 'created_at', 'comment_count', 'votes'].includes(sortBy))
                 throw { status: 400, message: 'Invalid sort query' }
 
             if (order && !['asc', 'desc'].includes(order)) throw { status: 400, message: 'Invalid order query' }
