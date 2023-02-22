@@ -6,6 +6,19 @@ module.exports = {
 			...['validateQuery', 'buildQueryString', 'replacements'].reduce(
 				(Args, task) =>
 					({
+						validateQuery: () => {
+							if (
+								sortBy &&
+								!['title', 'topic', 'author', 'created_at', 'comment_count', 'votes'].includes(
+									sortBy
+								)
+							)
+								throw { status: 400, message: 'Invalid sort query' }
+
+							if (order && !['asc', 'desc'].includes(order))
+								throw { status: 400, message: 'Invalid order query' }
+						},
+
 						buildQueryString: () =>
 							Args.push(
 								`
@@ -43,20 +56,6 @@ module.exports = {
 							if (title) Args.push(`%${title}%`)
 							if (topic) Args.push(`%${topic}%`)
 							if (author) Args.push(`%${author}%`)
-						},
-
-						validateQuery: () => {
-							console.log('sortby :>> ', sortBy)
-							if (
-								sortBy &&
-								!['title', 'topic', 'author', 'created_at', 'comment_count', 'votes'].includes(
-									sortBy
-								)
-							)
-								throw { status: 400, message: 'Invalid sort query' }
-
-							if (order && !['asc', 'desc'].includes(order))
-								throw { status: 400, message: 'Invalid order query' }
 						},
 					}[task]()
 						? Args
